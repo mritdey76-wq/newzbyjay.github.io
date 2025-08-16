@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India's New Tax Rules FY 2025-26: An Interactive Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a task-oriented, single-page dashboard. The primary user goal is to understand their personal tax liability under the new rules. The structure prioritizes this with an interactive 'Regime Calculator' as the centerpiece. It begins with 'Key Highlights' for immediate value, flows into the personalized calculator, then offers 'Detailed Comparisons' for deeper analysis, and provides 'Taxpayer-Specific Guides' for tailored advice. This non-linear, tool-first approach is chosen over a simple report structure to maximize user engagement and comprehension, allowing users to quickly find the information most relevant to them. -->
+    <!-- Visualization & Content Choices: Report Info -> Goal -> Viz/Method -> Interaction -> Justification. 1. Tax Liability -> Compare -> Bar Chart (Chart.js) -> Real-time updates from sliders -> Provides instant, clear visual feedback on which regime is better. 2. Tax Slabs -> Compare -> Bar Chart (Chart.js) -> Static visual -> Clearly illustrates the structural differences in tax rates between regimes. 3. Deductions & Rules -> Inform/Compare -> Interactive Tables & Accordions (HTML/JS) -> Click/Toggle to reveal info -> Organizes dense information cleanly, preventing cognitive overload and allowing users to explore topics of interest. 4. Key Numbers (Rebate, Deduction) -> Inform -> Stat Cards (HTML/Tailwind) -> Hover effects -> Draws attention to the most impactful changes immediately. This multi-format approach addresses different user needs, from quick calculations to in-depth research. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcfb;
+            color: #3f3c3a;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #c7a17a;
+            border-bottom-color: #c7a17a;
+        }
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #f0e9e4;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .btn-primary {
+            background-color: #8d6e63;
+            color: #ffffff;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #795548;
+        }
+        .btn-secondary {
+            background-color: #f0e9e4;
+            color: #3f3c3a;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary.active {
+            background-color: #8d6e63;
+            color: #ffffff;
+        }
+        .slider-track {
+            background: #e0e0e0;
+        }
+        .slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #8d6e63;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #8d6e63;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #8d6e63;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-f0e9e4">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Tax Guide FY 2025-26</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#highlights" class="nav-link active">Highlights</a>
+                <a href="#calculator" class="nav-link">Calculator</a>
+                <a href="#comparison" class="nav-link">Comparison</a>
+                <a href="#guides" class="nav-link">Guides</a>
+                <a href="#other-changes" class="nav-link">Other Changes</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                <span class="text-3xl">☰</span>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 flex flex-col space-y-4">
+            <a href="#highlights" class="nav-link text-center">Highlights</a>
+            <a href="#calculator" class="nav-link text-center">Calculator</a>
+            <a href="#comparison" class="nav-link text-center">Comparison</a>
+            <a href="#guides" class="nav-link text-center">Guides</a>
+            <a href="#other-changes" class="nav-link text-center">Other Changes</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-12">
+
+        <section id="highlights" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">New Tax Rules: Key Highlights for FY 2025-26</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">The Union Budget 2025-26 has introduced significant changes to personal taxation, primarily by enhancing the New Tax Regime to boost disposable income. Here are the most impactful updates you need to know.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6 rounded-lg text-center">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h3 class="text-xl font-semibold mb-2">Zero Tax up to ₹12 Lakh</h3>
+                    <p class="text-gray-600">Under the New Regime, a dramatically enhanced tax rebate under Section 87A means resident individuals with a taxable income up to ₹12,00,000 will pay zero income tax.</p>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <div class="text-4xl mb-4">📄</div>
+                    <h3 class="text-xl font-semibold mb-2">₹75,000 Standard Deduction</h3>
+                    <p class="text-gray-600">Salaried individuals and pensioners opting for the New Regime can now claim a higher standard deduction of ₹75,000, up from ₹50,000 in the Old Regime.</p>
+                </div>
+                <div class="card p-6 rounded-lg text-center">
+                    <div class="text-4xl mb-4">📈</div>
+                    <h3 class="text-xl font-semibold mb-2">Revised Tax Slabs</h3>
+                    <p class="text-gray-600">The New Regime features more gradual tax slabs, with the highest 30% rate now applicable only on income above ₹24 lakh, a significant increase from the previous ₹15 lakh threshold.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="calculator" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Old vs. New: Which Regime Saves You More?</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">Use this interactive calculator to estimate your tax liability under both regimes. Adjust the sliders for your income and common deductions to see which option is more beneficial for you in real-time.</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <div class="lg:col-span-2 card p-8 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-6">Your Financial Profile</h3>
+                    
+                    <div class="mb-6">
+                        <label for="grossIncome" class="block font-medium mb-2">Your Annual Gross Income (₹)</label>
+                        <input type="range" id="grossIncome" min="300000" max="5000000" value="1200000" step="25000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        <div class="text-center font-bold text-lg mt-2 text-indigo-600" id="grossIncomeValue">₹ 12,00,000</div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="deductions80c" class="block font-medium mb-2">Section 80C Deductions (PPF, ELSS, etc.)</label>
+                        <input type="range" id="deductions80c" min="0" max="150000" value="0" step="10000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        <div class="text-center font-bold text-lg mt-2" id="deductions80cValue">₹ 0</div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="deductionsHra" class="block font-medium mb-2">Other Deductions (HRA, Home Loan Interest)</label>
+                        <input type="range" id="deductionsHra" min="0" max="300000" value="0" step="10000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb">
+                        <div class="text-center font-bold text-lg mt-2" id="deductionsHraValue">₹ 0</div>
+                    </div>
+
+                     <div class="mb-6">
+                        <label for="taxpayerType" class="block font-medium mb-2">Are you a salaried individual?</label>
+                        <div class="flex items-center justify-center space-x-4">
+                            <button data-value="salaried" class="taxpayer-type-btn btn-secondary active px-4 py-2 rounded-md">Yes</button>
+                            <button data-value="other" class="taxpayer-type-btn btn-secondary px-4 py-2 rounded-md">No</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3 card p-8 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Tax Calculation Results</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div id="oldRegimeCard" class="p-6 border-2 border-gray-200 rounded-lg text-center relative">
+                            <h4 class="font-semibold text-lg mb-2">Old Regime</h4>
+                            <p class="text-3xl font-bold" id="oldRegimeTax">₹ 1,53,400</p>
+                            <span id="oldRegimeBadge" class="hidden absolute top-2 right-2 bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Not Recommended</span>
+                        </div>
+                        <div id="newRegimeCard" class="p-6 border-2 border-blue-400 rounded-lg text-center relative">
+                            <h4 class="font-semibold text-lg mb-2">New Regime</h4>
+                            <p class="text-3xl font-bold text-blue-600" id="newRegimeTax">₹ 0</p>
+                            <span id="newRegimeBadge" class="absolute top-2 right-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Recommended</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="taxComparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Regime Comparison: A Detailed Look</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">Understand the fundamental differences between the Old and New Tax Regimes. The New Regime offers lower tax rates but requires forgoing most deductions, representing a shift towards a simplified, consumption-driven tax policy.</p>
+            <div class="chart-container">
+                 <canvas id="slabComparisonChart"></canvas>
+            </div>
+        </section>
+
+        <section id="guides" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Guidance for Every Taxpayer</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">The new rules affect different taxpayers in unique ways. Select your profile to see tailored advice and strategic considerations to help you make the best financial decisions.</p>
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button class="profile-btn btn-secondary active px-6 py-3 rounded-lg" data-target="salaried-guide">Salaried Individuals</button>
+                <button class="profile-btn btn-secondary px-6 py-3 rounded-lg" data-target="freelancer-guide">Freelancers</button>
+                <button class="profile-btn btn-secondary px-6 py-3 rounded-lg" data-target="senior-guide">Senior Citizens</button>
+                <button class="profile-btn btn-secondary px-6 py-3 rounded-lg" data-target="nri-guide">NRIs</button>
+            </div>
+
+            <div class="card p-8 rounded-lg max-w-4xl mx-auto">
+                <div id="salaried-guide" class="profile-content">
+                    <h3 class="text-2xl font-semibold mb-4">Guide for Salaried Individuals</h3>
+                    <p class="mb-4">The New Regime is highly advantageous for salaried employees, especially due to the enhanced standard deduction and the powerful Section 87A rebate.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Tax-Free up to ₹12.75 Lakh:</strong> With a gross salary of ₹12.75 lakh, the ₹75,000 standard deduction reduces taxable income to ₹12 lakh. The ₹60,000 tax liability is then completely nullified by the rebate, resulting in zero tax.</li>
+                        <li><strong>Break-Even Analysis:</strong> The New Regime is often better unless you claim very high deductions (e.g., maxing out 80C, significant HRA, and home loan interest). Use the calculator to find your personal break-even point.</li>
+                        <li><strong>Annual Choice:</strong> You can choose between the Old and New regimes every year, giving you the flexibility to pick the most beneficial option based on your financial situation for that year.</li>
+                    </ul>
+                </div>
+                <div id="freelancer-guide" class="profile-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4">Guide for Freelancers</h3>
+                    <p class="mb-4">Freelancers' income is taxed as "Business or Profession," allowing for deduction of business expenses. The choice of regime requires careful consideration.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>No Standard Deduction:</strong> Unlike salaried individuals, freelancers do not get a standard deduction. To achieve a zero-tax outcome at ₹12.75 lakh gross receipts, you must have at least ₹75,000 in documented business expenses.</li>
+                        <li><strong>Presumptive Taxation (44ADA):</strong> If your gross receipts are below ₹75 lakh, you can opt for presumptive taxation, declaring 50% of receipts as income. The New Regime's lower rates on this presumptive income are highly beneficial.</li>
+                        <li><strong>Strategic Choice:</strong> Once you opt out of the New Regime, you can only switch back once in your lifetime. This makes the initial decision critical. For most freelancers, staying with the default New Regime is simpler and often more tax-efficient.</li>
+                    </ul>
+                </div>
+                <div id="senior-guide" class="profile-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4">Guide for Senior Citizens (60+)</h3>
+                    <p class="mb-4">The new rules offer compelling benefits for senior citizens, though some specific advantages of the Old Regime are retained.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Power of the Rebate:</strong> The New Regime's zero-tax liability up to ₹12 lakh income is a massive benefit that often outweighs the Old Regime's perks.</li>
+                        <li><strong>Old Regime Benefits:</strong> The Old Regime still offers a higher basic exemption limit (₹3 lakh for seniors, ₹5 lakh for super seniors) and a special deduction of ₹50,000 on interest income (Section 80TTB).</li>
+                        <li><strong>TDS Relief:</strong> The TDS threshold on interest income has been doubled to ₹1,00,000, improving cash flow for many seniors.</li>
+                        <li><strong>Recommendation:</strong> For most seniors with income up to ₹12 lakh, the New Regime is the clear winner. A detailed calculation is only needed for those with higher incomes and substantial interest earnings.</li>
+                    </ul>
+                </div>
+                <div id="nri-guide" class="profile-content hidden">
+                    <h3 class="text-2xl font-semibold mb-4">Guide for Non-Resident Indians (NRIs)</h3>
+                    <p class="mb-4">NRIs can opt for the new slabs on their India-sourced income, but key benefits are not available to them.</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>No Section 87A Rebate:</strong> This is the most critical distinction. The zero-tax benefit up to ₹12 lakh is NOT available to NRIs. You will pay tax as per the slab rates from the first taxable rupee.</li>
+                        <li><strong>Purely Mathematical Choice:</strong> The decision between regimes is based on whether the tax saved from the New Regime's lower rates is more than the tax saved from deductions (like home loan interest) you can claim in the Old Regime.</li>
+                        <li><strong>Compliance Relief:</strong> NRIs benefit from procedural changes like the removal of higher TDS for non-filers and relaxed rules for self-occupied house property.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="other-changes" class="scroll-mt-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Other Important Reforms</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">The budget also introduced key changes to withholding taxes (TDS/TCS), capital gains, and compliance procedures to simplify the tax system.</p>
+            <div class="max-w-4xl mx-auto space-y-4">
+                <div class="accordion-item card rounded-lg">
+                    <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                        <span class="text-xl font-semibold">Withholding Tax (TDS/TCS) Relief</span>
+                        <span class="text-2xl font-bold transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content px-6">
+                        <div class="pb-6 text-gray-700 space-y-2">
+                            <p><strong>Interest for Seniors:</strong> TDS threshold on interest income for senior citizens doubled to ₹1,00,000.</p>
+                            <p><strong>Rental Income:</strong> TDS threshold for rent paid by individuals raised from ₹2.4 lakh to ₹6 lakh per year.</p>
+                            <p><strong>Foreign Remittance (LRS):</strong> TCS threshold increased to ₹10 lakh, and remittances for education loans are now exempt.</p>
+                            <p><strong>Compliance Simplified:</strong> Punitive higher TDS/TCS rates for non-filers have been removed.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item card rounded-lg">
+                    <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                        <span class="text-xl font-semibold">Capital Gains Taxation</span>
+                        <span class="text-2xl font-bold transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content px-6">
+                        <div class="pb-6 text-gray-700 space-y-2">
+                            <p>The rules established in the Finance (No. 2) Act, 2024, remain in effect. No new changes were introduced in the Feb 2025 budget.</p>
+                            <p><strong>Uniform LTCG Rate:</strong> A standardized 12.5% rate applies to most assets.</p>
+                            <p><strong>No Indexation:</strong> The benefit of adjusting acquisition cost for inflation has been removed for most assets, potentially increasing the tax burden.</p>
+                            <p><strong>Transitional Relief:</strong> A one-time opportunity to set off accumulated capital losses (as of March 31, 2026) against any capital gains will be available for 8 years starting from Tax Year 2026-27.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item card rounded-lg">
+                    <button class="accordion-header w-full text-left p-6 flex justify-between items-center">
+                        <span class="text-xl font-semibold">Procedural & Compliance Updates</span>
+                        <span class="text-2xl font-bold transform transition-transform">+</span>
+                    </button>
+                    <div class="accordion-content px-6">
+                        <div class="pb-6 text-gray-700 space-y-2">
+                            <p><strong>Filing Deadlines:</strong> The standard due date for individuals remains July 31, unless extended by the CBDT.</p>
+                            <p><strong>Updated Returns (ITR-U):</strong> The time limit for filing an updated return to disclose missed income has been extended from 2 years to 4 years from the end of the relevant assessment year.</p>
+                            <p><strong>New Income-Tax Bill 2025:</strong> A new, simplified tax law is set to replace the old Income Tax Act, 1961 from April 1, 2026, aiming to reduce complexity and litigation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>&copy; 2025 Interactive Tax Guide. All information is based on the Union Budget 2025-26 and is for illustrative purposes only.</p>
+            <p class="text-sm text-gray-400 mt-2">Always consult a professional tax advisor for personal financial decisions.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const grossIncomeSlider = document.getElementById('grossIncome');
+            const deductions80cSlider = document.getElementById('deductions80c');
+            const deductionsHraSlider = document.getElementById('deductionsHra');
+            const taxpayerTypeButtons = document.querySelectorAll('.taxpayer-type-btn');
+
+            const grossIncomeValue = document.getElementById('grossIncomeValue');
+            const deductions80cValue = document.getElementById('deductions80cValue');
+            const deductionsHraValue = document.getElementById('deductionsHraValue');
+
+            const oldRegimeTaxEl = document.getElementById('oldRegimeTax');
+            const newRegimeTaxEl = document.getElementById('newRegimeTax');
+            
+            const oldRegimeCard = document.getElementById('oldRegimeCard');
+            const newRegimeCard = document.getElementById('newRegimeCard');
+            const oldRegimeBadge = document.getElementById('oldRegimeBadge');
+            const newRegimeBadge = document.getElementById('newRegimeBadge');
+            
+            let taxpayerType = 'salaried';
+
+            const formatCurrency = (value) => `₹ ${new Intl.NumberFormat('en-IN').format(value)}`;
+
+            const oldRegimeSlabs = {
+                general: [
+                    { limit: 250000, rate: 0 },
+                    { limit: 500000, rate: 0.05 },
+                    { limit: 1000000, rate: 0.20 },
+                    { limit: Infinity, rate: 0.30 }
+                ]
+            };
+
+            const newRegimeSlabs = [
+                { limit: 400000, rate: 0 },
+                { limit: 800000, rate: 0.05 },
+                { limit: 1200000, rate: 0.10 },
+                { limit: 1600000, rate: 0.15 },
+                { limit: 2000000, rate: 0.20 },
+                { limit: 2400000, rate: 0.25 },
+                { limit: Infinity, rate: 0.30 }
+            ];
+
+            function calculateTax(taxableIncome, slabs) {
+                let tax = 0;
+                let remainingIncome = taxableIncome;
+                let previousLimit = 0;
+
+                for (const slab of slabs) {
+                    if (remainingIncome > 0) {
+                        const taxableInSlab = Math.min(remainingIncome, slab.limit - previousLimit);
+                        tax += taxableInSlab * slab.rate;
+                        remainingIncome -= taxableInSlab;
+                        previousLimit = slab.limit;
+                    } else {
+                        break;
+                    }
+                }
+                return tax;
+            }
+
+            function updateCalculator() {
+                const grossIncome = parseInt(grossIncomeSlider.value);
+                const deductions80c = parseInt(deductions80cSlider.value);
+                const deductionsHra = parseInt(deductionsHraSlider.value);
+
+                grossIncomeValue.textContent = formatCurrency(grossIncome);
+                deductions80cValue.textContent = formatCurrency(deductions80c);
+                deductionsHraValue.textContent = formatCurrency(deductionsHra);
+                
+                let standardDeductionOld = (taxpayerType === 'salaried') ? 50000 : 0;
+                let standardDeductionNew = (taxpayerType === 'salaried') ? 75000 : 0;
+
+                const totalDeductions = deductions80c + deductionsHra + standardDeductionOld;
+                let taxableIncomeOld = Math.max(0, grossIncome - totalDeductions);
+                let taxableIncomeNew = Math.max(0, grossIncome - standardDeductionNew);
+
+                let taxOld = calculateTax(taxableIncomeOld, oldRegimeSlabs.general);
+                if (taxableIncomeOld <= 500000) {
+                    taxOld = 0;
+                }
+                
+                let taxNew = calculateTax(taxableIncomeNew, newRegimeSlabs);
+                if (taxableIncomeNew <= 1200000) {
+                     const rebate = Math.min(taxNew, 60000);
+                     taxNew -= rebate;
+                }
+
+                const finalTaxOld = Math.round(taxOld * 1.04);
+                const finalTaxNew = Math.round(taxNew * 1.04);
+
+                oldRegimeTaxEl.textContent = formatCurrency(finalTaxOld);
+                newRegimeTaxEl.textContent = formatCurrency(finalTaxNew);
+
+                taxComparisonChart.data.datasets[0].data = [finalTaxOld, finalTaxNew];
+                taxComparisonChart.update();
+                
+                if (finalTaxNew < finalTaxOld) {
+                    newRegimeCard.classList.add('border-blue-400');
+                    newRegimeCard.classList.remove('border-gray-200');
+                    oldRegimeCard.classList.add('border-gray-200');
+                    oldRegimeCard.classList.remove('border-blue-400');
+                    newRegimeBadge.classList.remove('hidden');
+                    oldRegimeBadge.classList.add('hidden');
+                } else {
+                    oldRegimeCard.classList.add('border-blue-400');
+                    oldRegimeCard.classList.remove('border-gray-200');
+                    newRegimeCard.classList.add('border-gray-200');
+                    newRegimeCard.classList.remove('border-blue-400');
+                    oldRegimeBadge.classList.remove('hidden');
+                    newRegimeBadge.classList.add('hidden');
+                }
+            }
+
+            const taxComparisonCtx = document.getElementById('taxComparisonChart').getContext('2d');
+            const taxComparisonChart = new Chart(taxComparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Old Regime', 'New Regime'],
+                    datasets: [{
+                        label: 'Tax Payable (₹)',
+                        data: [0, 0],
+                        backgroundColor: ['rgba(107, 114, 128, 0.6)', 'rgba(59, 130, 246, 0.6)'],
+                        borderColor: ['rgba(107, 114, 128, 1)', 'rgba(59, 130, 246, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Tax: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const slabComparisonCtx = document.getElementById('slabComparisonChart').getContext('2d');
+            const slabComparisonChart = new Chart(slabComparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-4L', '4-8L', '8-12L', '12-16L', '16-20L', '20-24L', '>24L'],
+                    datasets: [
+                        {
+                            label: 'Old Regime Rate (%)',
+                            data: [5, 20, 20, 30, 30, 30, 30],
+                            backgroundColor: 'rgba(107, 114, 128, 0.6)',
+                            borderColor: 'rgba(107, 114, 128, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'New Regime Rate (%)',
+                            data: [0, 5, 10, 15, 20, 25, 30],
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tax Slab Rate Comparison (FY 2025-26)',
+                            font: { size: 18 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tax Rate (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Income Slabs (₹)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            grossIncomeSlider.addEventListener('input', updateCalculator);
+            deductions80cSlider.addEventListener('input', updateCalculator);
+            deductionsHraSlider.addEventListener('input', updateCalculator);
+            taxpayerTypeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    taxpayerTypeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    taxpayerType = btn.dataset.value;
+                    updateCalculator();
+                });
+            });
+
+            const profileButtons = document.querySelectorAll('.profile-btn');
+            const profileContents = document.querySelectorAll('.profile-content');
+            profileButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    profileButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const targetId = button.dataset.target;
+                    profileContents.forEach(content => {
+                        if (content.id === targetId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = header.querySelector('span:last-child');
+                header.addEventListener('click', () => {
+                    const isExpanded = content.style.maxHeight && content.style.maxHeight !== '0px';
+                    
+                    accordionItems.forEach(otherItem => {
+                        otherItem.querySelector('.accordion-content').style.maxHeight = '0px';
+                        otherItem.querySelector('.accordion-header span:last-child').style.transform = 'rotate(0deg)';
+                    });
+
+                    if (!isExpanded) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(45deg)';
+                    }
+                });
+            });
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    if(mobileMenu.classList.contains('hidden') === false){
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            updateCalculator();
+        });
+    </script>
+</body>
+</html>
